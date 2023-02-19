@@ -214,16 +214,28 @@ const post = catchAsync(async (req: any, res: any) => {
 });
 
 const updateLeaseRange = catchAsync(async (req: any, res: any) => {
+  
   const { start, end, locationId } = req.body;
 
-  const location = await Location.findOne({ id: locationId });
+  const location = await Location.findOne({
+    where: {id: locationId},
+    relations: ['owner'],
+  })
 
   if (!location) {
     return res
       .status(httpStatus.NO_CONTENT)
-      .json({ response: "No location found" });
+      .json({ response: "No se encontro la propiedad" });
+  }    
+  if (req.currentUser.id !== location.owner.id) {
+    if (!req.currentUser || req.currentUser.isAdmin !== true) {
+      return res
+        .status(httpStatus.UNAUTHORIZED)
+        .json({ message: "No tienes los permisos necesarios." });
+    }
   }
 
+  
   location.startLease = start;
   location.endLease = end;
 
@@ -231,6 +243,41 @@ const updateLeaseRange = catchAsync(async (req: any, res: any) => {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
   });
   res.status(httpStatus.OK).json(location);
+});
+
+const updateLocation = catchAsync(async (req: any, res: any) => {
+  
+  const { id } = req.params;
+  const { startLease, endLease, isActive } = req.body
+
+  const foundLocation = await Location.findOne({
+    where: {id},
+    relations: ['owner'],
+  })
+
+  if (!foundLocation) {
+    return res
+      .status(httpStatus.NO_CONTENT)
+      .json({ response: "No se encontro la propiedad" });
+  }    
+  if (req.currentUser.id !== foundLocation.owner.id) {
+    if (!req.currentUser || req.currentUser.isAdmin !== true) {
+      return res
+        .status(httpStatus.UNAUTHORIZED)
+        .json({ message: "No tienes los permisos necesarios." });
+    }
+  }
+
+  console.log('%clocations.controller.ts line:271 req.body', 'color: white; background-color: #007acc;', req.body);
+  
+  foundLocation.startLease = startLease;
+  foundLocation.endLease = endLease;
+  foundLocation.isActive = isActive;
+
+  await foundLocation.save().catch((error) => {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
+  });
+  res.status(httpStatus.OK).json(foundLocation);
 });
 
 const updateLocationValue = catchAsync(async (req: any, res: any) => {
@@ -241,7 +288,7 @@ const updateLocationValue = catchAsync(async (req: any, res: any) => {
   if (!location) {
     return res
       .status(httpStatus.NO_CONTENT)
-      .json({ response: "No location found" });
+      .json({ response: "No se encontro la propiedad" });
   }
 
   let product;
@@ -477,6 +524,7 @@ const changeLocationIsActiveProperty = catchAsync(
     return res.status(httpStatus.OK).json(location);
   }
 );
+
 module.exports = {
   getLocationById,
   get,
@@ -488,4 +536,5 @@ module.exports = {
   // createCheckoutSession,
   // webhook,
   changeLocationIsActiveProperty,
+  updateLocation
 };
