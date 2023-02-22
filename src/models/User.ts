@@ -77,6 +77,9 @@ export class User extends BaseEntity {
   @Column({ nullable: true })
   rut: string;
 
+  @Column({ nullable: true })
+  stripeCustomerId: string;
+
   @OneToMany(() => Location, (location) => location.owner)
   locations: Location[];
 

@@ -9,14 +9,14 @@ const auth = require("../middlewares/auth");
 // const auth = require("../middlewares/auth");
 router.get("/", locationsController.get);
 router.get("/all", auth(), locationsController.getAllLocationsForAdmin);
-router.get("/:id", locationsController.getLocationById);
-router.put("/:id",[auth()],locationsController.updateLocation);
-
 router.post("/", locationsController.post);
 router.put("/lease",[validate(validator.updateLeaseRange), auth()],locationsController.updateLeaseRange);
 router.put("/value", locationsController.updateLocationValue);
 // router.get("/:idOwner", locationsController.getLocationsByOwner);
 router.put("/toogleActive/:idLocation",[validate(validator.changeLocationIsActiveProperty), auth()],locationsController.changeLocationIsActiveProperty);
+router.get("/:id", locationsController.getLocationById);
+router.put("/:id",[auth()],locationsController.updateLocation);
+
 
 // router.post(
 //   "/create-checkout-session",

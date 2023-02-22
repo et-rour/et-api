@@ -252,7 +252,7 @@ const createLocationCheckoutSession = catchAsync(async (req: any, res: any) => {
       ...metadataSession,
       ...contractVariables,
     },
-    customer_email: req.currentUser.email,
+    customer: req.currentUser.stripeCustomerId,
     line_items: [
       {
         // Provide the exact Price ID (for example, pr_1234) of the product you want to sell
