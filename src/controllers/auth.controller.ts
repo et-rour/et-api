@@ -13,6 +13,7 @@ const catchAsync = require("../utils/catchAsync");
 const ApiError = require("../utils/ApiError");
 const pick = require("../utils/pick");
 
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 import { User } from "../models/User";
 const { transporter } = require("../utils/sendWelcomeEmail");
 
@@ -61,11 +62,20 @@ const register = catchAsync(async (req: any, res: any) => {
       }
       throw new ApiError(code, message);
     });
+  
+  const lowerCaseEmail = email.toLowerCase();
+  // stripe customer id
+  const newCustomer = await stripe.customers.create({
+    description: 'Customer created in register',
+    email: lowerCaseEmail,
+    name:`${firstname} ${lastname}`,
+    phone
+  });
 
   const user = new User();
   user.firstName = firstname;
   user.lastName = lastname;
-  user.email = email.toLowerCase();
+  user.email = lowerCaseEmail
   user.isOwner = isOwner ? true : false;
   user.phone = phone;
   user.isClient = false;
@@ -75,6 +85,7 @@ const register = catchAsync(async (req: any, res: any) => {
   user.isVerified = false;
   user.isActive = true;
   user.didReview = false;
+  user.stripeCustomerId = newCustomer.id;
 
   await user.save().catch((error: any) => {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
@@ -297,42 +308,30 @@ const changeStatus = catchAsync(async (req: any, res: any) => {
 });
 
 const update = catchAsync(async (req: any, res: any) => {
-  let { firstname, lastname, email, password, country, isOwner, id } = req.body;
+  const { id } = req.params
+  const selectedUser = await User.findOne({where: {id}});
 
-  const selectedUser = await User.findOne({
-    where: {
-      id: id,
-    },
-    relations: ["locations"],
-  });
-
-  if (selectedUser) {
-    if (firstname) {
-      selectedUser.firstName = firstname;
-    }
-    if (lastname) {
-      selectedUser.lastName = lastname;
-    }
-    if (email) {
-      selectedUser.email = email;
-    }
-    if (country) {
-      selectedUser.country = country;
-    }
-    if (isOwner) {
-      selectedUser.isOwner = isOwner;
-    }
-  } else {
-    throw new ApiError(
-      httpStatus.INTERNAL_SERVER_ERROR,
-      "Could find the user."
-    );
+  if (!selectedUser) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR,"No se encontro el usuario.");
   }
-  await selectedUser.save().catch((error: any) => {
+  
+  if (!req.currentUser.isAdmin) {
+    if (selectedUser.id !== req.currentUser) {
+      throw new ApiError(httpStatus.UNAUTHORIZED, "El usuario no esta autorizado");
+    }
+  }
+  
+  const userUpdated = await User.update({id:parseInt(id)},req.body).catch((error: any) => {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
   });
+  
+  console.log(
+    '%cauth.controller.ts line:312 userUpdated',
+    'color: #007acc;',
+    JSON.stringify(userUpdated, null, "\t" )
+  );
 
-  return res.status(httpStatus.OK).json(selectedUser);
+  return res.status(httpStatus.OK).json(userUpdated);
 });
 
 const updateExtraData = catchAsync(async (req: any, res: any) => {

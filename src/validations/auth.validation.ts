@@ -34,6 +34,20 @@ const changeUserIsActiveProperty = {
   }),
 };
 
+const updateUser = {
+  body: Joi.object().keys({
+    isOwner: Joi.boolean(),
+    firstName: Joi.string(),
+    lastName: Joi.string(),
+    whatsapp: Joi.string(),
+    country: Joi.string(),
+    companyName: Joi.string(),
+    identityCard: Joi.string(),
+    representativeName: Joi.string(),
+    rut: Joi.string(),
+  }),
+};
+
 const putExtraData = {
   body: Joi.object().keys({
     companyName: Joi.string().required(),
@@ -81,6 +95,7 @@ module.exports = {
   login,
   changeUserIsActiveProperty,
   putExtraData,
+  updateUser,
   // logout,
   // refreshTokens,
   // forgotPassword,

@@ -108,6 +108,25 @@ const getUserById = catchAsync(async (req: any, res: any) => {
   return res.status(httpStatus.OK).json(users);
 });
 
+const updateUserData = catchAsync(async (req: any, res: any) => {
+  const { id } = req.params
+  const selectedUser = await User.findOne({where: {id}});
+
+  if (!selectedUser) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR,"No se encontro el usuario.");
+  }
+  
+  if (!req.currentUser.isAdmin) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "El usuario no esta autorizado");
+  }
+  
+  const userUpdated = await User.update({id:parseInt(id)},req.body).catch((error: any) => {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
+  });
+  
+  return res.status(httpStatus.OK).json(userUpdated);
+});
+
 const getUserByIdTrash = catchAsync(async (req: any, res: any) => {
   const id = req.params.id;
 
@@ -141,6 +160,7 @@ const getUserByIdTrash = catchAsync(async (req: any, res: any) => {
 
   return res.status(httpStatus.OK).json(users);
 });
+
 
 const verifyUser = catchAsync(async (req: any, res: any) => {
   const { id } = req.body;
@@ -1954,6 +1974,7 @@ module.exports = {
   getAllUsers,
   getTrashUsers,
   getUserById,
+  updateUserData,
   getUserByIdTrash,
   verifyUser,
   deleteUser,

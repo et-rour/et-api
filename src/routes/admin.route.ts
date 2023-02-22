@@ -13,6 +13,7 @@ import { upload } from "../config/multer";
 router.get("/listusers", adminController.getAllUsers);
 router.get("/listuserstrash", adminController.getTrashUsers);
 router.get("/user/:id", adminController.getUserById);
+router.put("/user/:id", adminController.updateUserData);
 router.get("/user/:id/trash", adminController.getUserByIdTrash);
 router.put("/verifyuser",[validate(validator.verifyUser)],adminController.verifyUser);
 router.put("/user/:id/asignAdmin",[validate(validator.asignAdminRol)],adminController.asignAdminRol);
