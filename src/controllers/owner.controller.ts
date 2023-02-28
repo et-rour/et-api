@@ -1,4 +1,4 @@
-export {};
+export { };
 /** Node Modules */
 const httpStatus = require("http-status");
 
@@ -24,42 +24,52 @@ const getPropertiesByOwnerId = catchAsync(async (req: any, res: any) => {
     },
   });
 
-  res.status(httpStatus.OK).json( locations );
+  res.status(httpStatus.OK).json(locations);
 });
 const getReservationsByClientId = catchAsync(async (req: any, res: any) => {
   const { id } = req.params;
 
-  const locations = await Reservation.find({
+  const ownerReservations = await Reservation.find({
     relations: ["owner", "client", "location", "room"],
-    where: {
-      clientId: id
-    },
+    where: [
+      { ownerId: id }
+    ],
   });
 
-  res.status(httpStatus.OK).json( locations );
+  const clientReservations = await Reservation.find({
+    relations: ["owner", "client", "location", "room"],
+    where: [
+      { clientId: id },
+    ],
+  });
+
+  res.status(httpStatus.OK).json({
+    ownerReservations,
+    clientReservations
+  });
 });
 const getPaymentsByClientId = catchAsync(async (req: any, res: any) => {
 
   const userFound = await User.findOne({
-    where: {id:req.currentUser.id},
+    where: { id: req.currentUser.id },
   });
 
 
-  if (!userFound ) {
+  if (!userFound) {
     throw new ApiError(httpStatus.NOT_FOUND, "Usuario no encontrado");
   }
-  if (!userFound.stripeCustomerId ) {
+  if (!userFound.stripeCustomerId) {
     throw new ApiError(httpStatus.NOT_FOUND, "Id del cliente en stripe no disponible ");
   }
 
   const paymentIntents = await stripe.paymentIntents.list({
-    customer:userFound.stripeCustomerId,
+    customer: userFound.stripeCustomerId,
     // customer:"cus_NNrynlHAeYQEHU",
-    limit:100
+    limit: 100
   });
 
 
-  res.status(httpStatus.OK).json( paymentIntents );
+  res.status(httpStatus.OK).json(paymentIntents);
 });
 
 module.exports = {

@@ -1,6 +1,6 @@
 import { allow } from "joi";
 
-export {};
+export { };
 const Joi = require("joi");
 
 // USER
@@ -49,28 +49,37 @@ const verifyLocation = {
 const modifyLocation = {
   body: Joi.object().keys({
     id: Joi.number().required(),
-    name: Joi.string().allow(null, ""),
-    address: Joi.string().allow(null, ""),
+    isVerified: Joi.boolean(),
+    isActive: Joi.boolean(),
+    name: Joi.string(),
+    address: Joi.string(),
+    propertyType: Joi.string(),
+    landUse: Joi.string(),
+    lat: Joi.number(),
+    long: Joi.number(),
     rooms: Joi.number(),
     bathrooms: Joi.number(),
-    painting: Joi.number(),
-    floor: Joi.number(),
-    email: Joi.string().allow(null, ""),
-    phone: Joi.string().allow(null, ""),
-    description: Joi.string().allow(null, ""),
-    unused: Joi.number(),
-    landUse: Joi.string().allow(null, ""),
-    garage: Joi.number(),
-    zone: Joi.number(),
-    owner: Joi.number(),
-    lat: Joi.number(),
-    lng: Joi.number(),
-    meters: Joi.number(),
+    calendlyLink: Joi.string(),
     vault: Joi.boolean(),
     cleaning: Joi.boolean(),
     wifi: Joi.boolean(),
     security: Joi.boolean(),
-    calendlyLink: Joi.string().allow(null, ""),
+    painting: Joi.number(),
+    floor: Joi.number(),
+    garage: Joi.number(),
+    email: Joi.string(),
+    phone: Joi.string(),
+    description: Joi.string(),
+    unused: Joi.number(),
+    zone: Joi.number(),
+    owner: Joi.number(),
+    squareMeters: Joi.number(),
+    stripePriceId: Joi.string(),
+    stripeProductId: Joi.string(),
+    startLease: Joi.string(),
+    endLease: Joi.string(),
+    createdByAdmin: Joi.boolean(),
+    isDaily: Joi.boolean(),
   }),
 };
 const updateLocationCoverImage = {
