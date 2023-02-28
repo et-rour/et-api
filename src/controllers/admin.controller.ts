@@ -1,4 +1,4 @@
-export {};
+export { };
 
 /** firebase storage*/
 const {
@@ -68,7 +68,7 @@ const getTrashUsers = catchAsync(async (req: any, res: any) => {
     //   httpStatus.INTERNAL_SERVER_ERROR,
     //   "Could not find any user"
     // );
-    return res.status(httpStatus.OK).json({users: []});
+    return res.status(httpStatus.OK).json({ users: [] });
   }
 
   return res.status(httpStatus.OK).json({ users });
@@ -110,20 +110,17 @@ const getUserById = catchAsync(async (req: any, res: any) => {
 
 const updateUserData = catchAsync(async (req: any, res: any) => {
   const { id } = req.params
-  const selectedUser = await User.findOne({where: {id}});
+  const selectedUser = await User.findOne({ where: { id } });
 
   if (!selectedUser) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR,"No se encontro el usuario.");
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "No se encontro el usuario.");
   }
-  
-  if (!req.currentUser.isAdmin) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, "El usuario no esta autorizado");
-  }
-  
-  const userUpdated = await User.update({id:parseInt(id)},req.body).catch((error: any) => {
+
+  console.log('%cadmin.controller.ts line:119 selectedUser', 'color: white; background-color: #007acc;', selectedUser);
+  const userUpdated = await User.update({ id: parseInt(id) }, req.body).catch((error: any) => {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
   });
-  
+
   return res.status(httpStatus.OK).json(userUpdated);
 });
 
@@ -397,7 +394,7 @@ const getLocationById = catchAsync(async (req: any, res: any) => {
     .innerJoinAndSelect("location.zone", "zone")
     .innerJoinAndSelect("location.owner", "user")
     .leftJoinAndSelect(
-      "location.roomsDetails", 
+      "location.roomsDetails",
       "room",
       "room.isDeleted = false"
     )
@@ -513,31 +510,7 @@ const verifyLocation = catchAsync(async (req: any, res: any) => {
 });
 
 const modifyLocation = catchAsync(async (req: any, res: any) => {
-  const {
-    id,
-    name,
-    address,
-    rooms,
-    bathrooms,
-    painting,
-    floor,
-    email,
-    phone,
-    description,
-    garage,
-    zone,
-    user,
-    lat,
-    lng,
-    meters,
-    vault,
-    cleaning,
-    wifi,
-    security,
-    landUse,
-    unused,
-    calendlyLink
-  } = req.body;
+  const { id, zone, user } = req.body;
 
   if (zone) {
     const selectedZone = await Zone.findOne({
@@ -580,34 +553,11 @@ const modifyLocation = catchAsync(async (req: any, res: any) => {
     );
   }
 
-  location.name = name;
-  location.address = address;
-  location.rooms = rooms;
-  location.bathrooms = bathrooms;
-  location.painting = painting;
-  location.floor = floor;
-  location.email = email;
-  location.phone = phone;
-  location.description = description;
-  location.garage = garage;
-  location.zone = zone;
-  location.owner = user;
-  location.lat = lat;
-  location.long = lng;
-  location.squareMeters = meters;
-  location.vault = vault;
-  location.cleaning = cleaning;
-  location.wifi = wifi;
-  location.security = security;
-  location.landUse = landUse;
-  location.unused = unused;
-  location.calendlyLink = calendlyLink;
-
-  await location.save().catch((error: any) => {
+  const locationUpdated = await Location.update({ id: parseInt(id) }, req.body).catch((error: any) => {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
   });
 
-  return res.status(httpStatus.OK).json(location);
+  return res.status(httpStatus.OK).json(locationUpdated);
 });
 
 const deleteLocation = catchAsync(async (req: any, res: any) => {
@@ -1519,11 +1469,11 @@ const postOneImage = catchAsync(async (req: any, res: any) => {
     );
   }
   const currentDate = new Date().getTime();
-  
+
   let imageBuffer = req.file.buffer;
   let imagePath = `${userEmail}${route}${currentDate}${originalname}`;
 
-  if (req.file.mimetype==="application/octet-stream") {
+  if (req.file.mimetype === "application/octet-stream") {
     const outputBuffer = await convert({
       buffer: imageBuffer, // the HEIC file buffer
       format: 'JPEG',      // output format
@@ -1704,7 +1654,7 @@ const deleteTestimonial = catchAsync(async (req: any, res: any) => {
   const { idTestimonial } = req.params;
 
   const foundedTestimonial = await Testimonial.findOne({
-    where: { id:idTestimonial },
+    where: { id: idTestimonial },
   });
 
   if (!foundedTestimonial) {
@@ -1717,7 +1667,7 @@ const deleteTestimonial = catchAsync(async (req: any, res: any) => {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
   });
 
-  res.status(httpStatus.OK).json({removed:true});
+  res.status(httpStatus.OK).json({ removed: true });
 });
 
 // GENERAL
@@ -1759,8 +1709,8 @@ const putCoverImage = catchAsync(async (req: any, res: any) => {
 
 const putText = catchAsync(async (req: any, res: any) => {
   const { text } = req.body;
-  const {id} = req.params
-  
+  const { id } = req.params
+
   const imageData = await General.findOne({
     where: { id },
   });
@@ -2023,7 +1973,7 @@ module.exports = {
   putTestimonial,
   deleteTestimonial,
 
-  
+
   postNewCoverImage,
   putCoverImage,
   putText,
