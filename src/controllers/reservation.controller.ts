@@ -62,6 +62,7 @@ interface ContractVariables {
 interface MetadataCheckoutSesion {
   metadata_stripe_price_id: string;
 
+  metadata_reservation_is_daily: boolean;
   metadata_reservation_owner_id: number;
   metadata_reservation_is_room: boolean;
   metadata_reservation_location_id: number;
@@ -121,6 +122,7 @@ const createLocationCheckoutSession = catchAsync(async (req: any, res: any) => {
     subContractor_email_1,
     subContractor_email_2,
     signature,
+    timeQuantity,
   } = req.body;
 
   const foundLocation = await Location.findOne({
@@ -147,6 +149,9 @@ const createLocationCheckoutSession = catchAsync(async (req: any, res: any) => {
     propertyValue = foundRoom.value;
     isRoom = true;
   }
+
+  // MULTIPLY PROPERTY VALUE FOR THE AMOUNT OF MONTHS OR HOURS IN THE RESERVATION
+  propertyValue = propertyValue * timeQuantity
 
   const startDate = moment(Number(range.start));
   const endDate = moment(Number(range.end));
@@ -203,6 +208,7 @@ const createLocationCheckoutSession = catchAsync(async (req: any, res: any) => {
     metadata_reservation_room_name: locationName,
     metadata_reservation_location_id: foundLocation.id,
     metadata_reservation_location_name: locationName,
+    metadata_reservation_is_daily: foundLocation.isDaily,
     metadata_reservation_price: propertyValue,
     metadata_reservation_user_id: req.currentUser.id,
     metadata_user_email: req.currentUser.email,
@@ -255,8 +261,12 @@ const createLocationCheckoutSession = catchAsync(async (req: any, res: any) => {
     customer: req.currentUser.stripeCustomerId,
     line_items: [
       {
-        // Provide the exact Price ID (for example, pr_1234) of the product you want to sell
-        price: foundLocation.stripePriceId,
+        price_data: {
+          currency: 'clp',
+          product_data: { name: locationName },
+          unit_amount: propertyValue,
+          tax_behavior: 'inclusive',
+        },
         quantity: 1,
       },
     ],
@@ -407,6 +417,7 @@ const webhook = catchAsync(async (request: any, response: any) => {
       reservation.end = reservationEndDate;
       reservation.clientId = metadataRecived.metadata_reservation_user_id;
       reservation.ownerId = metadataRecived.metadata_reservation_owner_id;
+      reservation.isDaily = metadataRecived.metadata_reservation_is_daily;
       reservation.price = paymentIntent.amount_total;
       reservation.status = "created";
       reservation.locationId = metadataRecived.metadata_reservation_location_id;

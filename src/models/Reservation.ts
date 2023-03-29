@@ -45,6 +45,9 @@ export class Reservation extends BaseEntity {
   @Column({ nullable: true })
   contractUrl: string;
 
+  @Column({ default:false })
+  isDaily: boolean;
+
   @ManyToOne(() => Location, (location) => location.reservations)
   location: Location;
   @Column({ nullable: true })

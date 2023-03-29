@@ -18,6 +18,8 @@ const createLocationCheckoutSession = {
       start: Joi.number(),
       end: Joi.number(),
     }).required(),
+    // Quantity of hours or months
+    timeQuantity: Joi.required(),
     company: Joi.string().required(),
     identity: Joi.string().required(),
     location_uses: Joi.string().required(),
