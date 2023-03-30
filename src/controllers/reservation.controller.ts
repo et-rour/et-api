@@ -13,6 +13,7 @@ import moment from "moment";
 import { Brackets, getRepository } from "typeorm";
 import { Room } from "../models/Room";
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const convert = require('heic-convert');
 
 // Importing modules
 
@@ -251,7 +252,7 @@ const createLocationCheckoutSession = catchAsync(async (req: any, res: any) => {
       ...metadataSession,
       ...contractVariables,
     },
-    customer_email: req.currentUser.email,
+    customer: req.currentUser.stripeCustomerId,
     line_items: [
       {
         // Provide the exact Price ID (for example, pr_1234) of the product you want to sell
@@ -646,6 +647,46 @@ const testPFDVariables = catchAsync(async (req: any, res: any) => {
   myDoc.end();
 });
 
+const postOneFile = catchAsync(async (req: any, res: any) => {
+  const { id } = req.params;
+  const { route } = req.body;
+  const { originalname } = req.file;
+
+  const foundReservation = await Reservation.findOne({
+    where:{ id: id},
+    relations:["client"]
+  })
+
+  if (!foundReservation) {
+    res.status(httpStatus.NOT_FOUND).json({ message:"Reservación invalida" });
+    return
+  }
+
+  if (foundReservation?.client.id !== req.currentUser.id) {
+    res.status(httpStatus.UNAUTHORIZED).json({ message:"Usiario no authorizado" });
+    return
+  }
+  const now =  new Date().getTime()
+  let imageBuffer = req.file.buffer;
+  let imagePath = `${route}${now}${originalname}`;
+
+  if (req.file.mimetype==="application/octet-stream") {
+    const outputBuffer = await convert({
+      buffer: imageBuffer, // the HEIC file buffer
+      format: 'JPEG',      // output format
+      quality: 0.92           // the jpeg compression quality, between 0 and 1
+    });
+    imageBuffer = outputBuffer
+    imagePath = `${route}${now}${originalname.split(".")[0]}.jpeg`;
+  }
+
+  const file = getAdminStorage().bucket().file(imagePath);
+  await file.save(imageBuffer);
+  await file.makePublic();
+  const url = file.publicUrl();
+
+  res.status(httpStatus.OK).json({ success: true, url });
+});
 const createPDF = (documentVariables: ContractVariables) => {
   var doc = new PDFDocument({ bufferPages: true });
 
@@ -1104,4 +1145,5 @@ module.exports = {
   postPDF,
   getPDF,
   testPFDVariables,
+  postOneFile
 };

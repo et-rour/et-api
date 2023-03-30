@@ -7,25 +7,18 @@ const auth = require("../middlewares/auth");
 
 const router = express.Router();
 
-router.post(
-  "/register",
-  validate(authValidation.register),
-  authController.register
-);
+router.post("/register",validate(authValidation.register),authController.register);
 router.post("/login", validate(authValidation.login), authController.login);
 router.post("/refresh", auth(), authController.refresh);
 router.post("/logout", auth(), authController.logout);
 router.post("/restore", authController.restorePassword);
 router.get("/users", auth(), authController.listUsers);
 router.post("/status", authController.changeStatus);
-router.put("/update", authController.update);
 router.put("/extra", [validate(authValidation.putExtraData), auth()], authController.updateExtraData);
 
-router.put(
-  "/toogleActive/:idUser",
-  [validate(authValidation.changeUserIsActiveProperty), auth()],
-  authController.changeUserIsActiveProperty
-);
+router.put("/toogleActive/:idUser",[validate(authValidation.changeUserIsActiveProperty), auth()],authController.changeUserIsActiveProperty);
+
+router.put("/:id", [validate(authValidation.updateUser), auth()], authController.update);
 
 module.exports = router;
 

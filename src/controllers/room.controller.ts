@@ -8,7 +8,6 @@ const ApiError = require("../utils/ApiError");
 
 import { Room } from "../models/Room";
 import { Location } from "../models/Location";
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const get = catchAsync(async (req: any, res: any) => {
   const rooms = await Room.find({

@@ -45,25 +45,25 @@ const get = catchAsync(async (req: any, res: any) => {
     }
     const updatedCurrencies = await Currency.find();
     
-    await transporter.sendMail({
-      from: '"Espacio temporal develop', // sender address
-      to: "victor@rour.dev,leandro@rour.dev", // list of receivers
-      subject: `Monedas actualizadas ${moment().toDate()} en: ${process.env.FIREBASE_ADMIN_PROJECT_ID}`, // Subject line
-      html: `<p>${JSON.stringify(updatedCurrencies,null,"\t")}</p>`,
-      amp: `<!doctype html>
-        <html ⚡4email>
-          <head>
-            <meta charset="utf-8">
-            <style amp4email-boilerplate>body{visibility:hidden}</style>
-            <script async src="https://cdn.ampproject.org/v0.js"></script>
-            <script async custom-element="amp-anim" src="https://cdn.ampproject.org/v0/amp-anim-0.1.js"></script>
-          </head>
-          <body>
-            <p>GIF (requires "amp-anim" script in header):<br/><amp-anim src="https://cldup.com/D72zpdwI-i.gif" width="500" height="350"/></p>
-            <p>${JSON.stringify(updatedCurrencies,null,"\t")}</p>
-          </body>
-        </html>`
-    });
+    // await transporter.sendMail({
+    //   from: '"Espacio temporal develop', // sender address
+    //   to: "victor@rour.dev,leandro@rour.dev", // list of receivers
+    //   subject: `Monedas actualizadas ${moment().toDate()} en: ${process.env.FIREBASE_ADMIN_PROJECT_ID}`, // Subject line
+    //   html: `<p>${JSON.stringify(updatedCurrencies,null,"\t")}</p>`,
+    //   amp: `<!doctype html>
+    //     <html ⚡4email>
+    //       <head>
+    //         <meta charset="utf-8">
+    //         <style amp4email-boilerplate>body{visibility:hidden}</style>
+    //         <script async src="https://cdn.ampproject.org/v0.js"></script>
+    //         <script async custom-element="amp-anim" src="https://cdn.ampproject.org/v0/amp-anim-0.1.js"></script>
+    //       </head>
+    //       <body>
+    //         <p>GIF (requires "amp-anim" script in header):<br/><amp-anim src="https://cldup.com/D72zpdwI-i.gif" width="500" height="350"/></p>
+    //         <p>${JSON.stringify(updatedCurrencies,null,"\t")}</p>
+    //       </body>
+    //     </html>`
+    // });
     
     return res.status(httpStatus.OK).json(updatedCurrencies);
   }

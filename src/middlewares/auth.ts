@@ -18,7 +18,7 @@ const auth =
       .verifyIdToken(token)
       .then((decodedToken: any) => {
         info = decodedToken;
-        console.log(info);
+        // console.log(info);
       })
       .catch((err: any) => {
         console.log({ err });
@@ -43,6 +43,11 @@ const auth =
     }
 
     req.currentUser = currentUser;
+    // console.log(
+    //   '\n\n\n\x1b[44m%s\x1b[0m',
+    //   'auth.ts line:46 currentUser',
+    //   JSON.stringify(currentUser, null, "\t" )
+    // );
     // now we should check for role permissions
     next();
   };
