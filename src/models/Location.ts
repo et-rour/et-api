@@ -147,7 +147,10 @@ export class Location extends BaseEntity {
 
   @OneToMany(() => Reservation, (reservation) => reservation.location)
   reservations: Reservation[];
-  
+
   @Column({ default: false })
   isDaily: boolean;
+
+  @Column({ default: 0 })
+  dailyValue: number;
 }

@@ -62,6 +62,9 @@ export class Room extends BaseEntity {
   
   @Column({ default: false })
   isDaily: boolean;
+  
+  @Column({ default: 0 })
+  dailyValue: number;
 
   @Column({ default: false })
   isDeleted: boolean;
