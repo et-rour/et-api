@@ -1,4 +1,4 @@
-export { };
+export {};
 
 /** firebase storage*/
 const {
@@ -18,8 +18,8 @@ const pick = require("../utils/pick");
 const { transporter } = require("../utils/sendWelcomeEmail");
 const { getAdminStorage } = require("../config/firebaseAdmin");
 
-const { promisify } = require('util');
-const convert = require('heic-convert');
+const { promisify } = require("util");
+const convert = require("heic-convert");
 
 /** Schemas */
 
@@ -109,17 +109,26 @@ const getUserById = catchAsync(async (req: any, res: any) => {
 });
 
 const updateUserData = catchAsync(async (req: any, res: any) => {
-  const { id } = req.params
+  const { id } = req.params;
   const selectedUser = await User.findOne({ where: { id } });
 
   if (!selectedUser) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "No se encontro el usuario.");
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      "No se encontro el usuario."
+    );
   }
 
-  console.log('%cadmin.controller.ts line:119 selectedUser', 'color: white; background-color: #007acc;', selectedUser);
-  const userUpdated = await User.update({ id: parseInt(id) }, req.body).catch((error: any) => {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
-  });
+  console.log(
+    "%cadmin.controller.ts line:119 selectedUser",
+    "color: white; background-color: #007acc;",
+    selectedUser
+  );
+  const userUpdated = await User.update({ id: parseInt(id) }, req.body).catch(
+    (error: any) => {
+      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
+    }
+  );
 
   return res.status(httpStatus.OK).json(userUpdated);
 });
@@ -158,7 +167,6 @@ const getUserByIdTrash = catchAsync(async (req: any, res: any) => {
   return res.status(httpStatus.OK).json(users);
 });
 
-
 const verifyUser = catchAsync(async (req: any, res: any) => {
   const { id } = req.body;
 
@@ -188,15 +196,15 @@ const verifyUser = catchAsync(async (req: any, res: any) => {
 const deleteUser = catchAsync(async (req: any, res: any) => {
   const { id } = req.body;
 
-  console.log('LOG 1', id)
+  console.log("LOG 1", id);
 
   const user = await User.findOne({
     where: {
       id: id,
-    }
-  })
+    },
+  });
 
-  console.log('LOG 2', user)
+  console.log("LOG 2", user);
 
   if (user) {
     user.isTrash = true;
@@ -206,9 +214,7 @@ const deleteUser = catchAsync(async (req: any, res: any) => {
     });
   }
 
-  return res
-    .status(httpStatus.OK)
-    .json(user);
+  return res.status(httpStatus.OK).json(user);
 });
 
 const deleteUserPermanent = catchAsync(async (req: any, res: any) => {
@@ -217,8 +223,8 @@ const deleteUserPermanent = catchAsync(async (req: any, res: any) => {
   const user = await User.findOne({
     where: {
       id: id,
-    }
-  })
+    },
+  });
 
   if (user) {
     user.isTrash = true;
@@ -229,9 +235,7 @@ const deleteUserPermanent = catchAsync(async (req: any, res: any) => {
     });
   }
 
-  return res
-    .status(httpStatus.OK)
-    .json(user);
+  return res.status(httpStatus.OK).json(user);
 });
 
 const restoreUser = catchAsync(async (req: any, res: any) => {
@@ -240,8 +244,8 @@ const restoreUser = catchAsync(async (req: any, res: any) => {
   const user = await User.findOne({
     where: {
       id: id,
-    }
-  })
+    },
+  });
 
   if (user) {
     user.isTrash = false;
@@ -252,9 +256,7 @@ const restoreUser = catchAsync(async (req: any, res: any) => {
     });
   }
 
-  return res
-    .status(httpStatus.OK)
-    .json(user);
+  return res.status(httpStatus.OK).json(user);
 });
 
 const asignAdminRol = catchAsync(async (req: any, res: any) => {
@@ -553,7 +555,10 @@ const modifyLocation = catchAsync(async (req: any, res: any) => {
     );
   }
 
-  const locationUpdated = await Location.update({ id: parseInt(id) }, req.body).catch((error: any) => {
+  const locationUpdated = await Location.update(
+    { id: parseInt(id) },
+    req.body
+  ).catch((error: any) => {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
   });
 
@@ -566,8 +571,8 @@ const deleteLocation = catchAsync(async (req: any, res: any) => {
   const location = await Location.findOne({
     where: {
       id: id,
-    }
-  })
+    },
+  });
 
   if (location) {
     location.isTrash = true;
@@ -577,9 +582,7 @@ const deleteLocation = catchAsync(async (req: any, res: any) => {
     });
   }
 
-  return res
-    .status(httpStatus.OK)
-    .json(location);
+  return res.status(httpStatus.OK).json(location);
 });
 
 const deleteLocationPermanent = catchAsync(async (req: any, res: any) => {
@@ -588,8 +591,8 @@ const deleteLocationPermanent = catchAsync(async (req: any, res: any) => {
   const location = await Location.findOne({
     where: {
       id: id,
-    }
-  })
+    },
+  });
 
   if (location) {
     location.isTrash = true;
@@ -600,9 +603,7 @@ const deleteLocationPermanent = catchAsync(async (req: any, res: any) => {
     });
   }
 
-  return res
-    .status(httpStatus.OK)
-    .json(location);
+  return res.status(httpStatus.OK).json(location);
 });
 
 const restoreLocation = catchAsync(async (req: any, res: any) => {
@@ -611,8 +612,8 @@ const restoreLocation = catchAsync(async (req: any, res: any) => {
   const location = await Location.findOne({
     where: {
       id: id,
-    }
-  })
+    },
+  });
 
   if (location) {
     location.isTrash = false;
@@ -623,9 +624,7 @@ const restoreLocation = catchAsync(async (req: any, res: any) => {
     });
   }
 
-  return res
-    .status(httpStatus.OK)
-    .json(location);
+  return res.status(httpStatus.OK).json(location);
 });
 
 const updateLocationCoverImage = catchAsync(async (req: any, res: any) => {
@@ -725,7 +724,7 @@ const createLocation = catchAsync(async (req: any, res: any) => {
   location.zone = zone;
   location.owner = owner;
   location.propertyType = propertyType;
-  location.landUse = 'commercial';
+  location.landUse = "commercial";
   location.isActive = false;
   location.isVerified = false;
   // location.value = value ? value : 0;
@@ -737,8 +736,7 @@ const createLocation = catchAsync(async (req: any, res: any) => {
   location.wifi = wifi;
   location.security = security;
   location.createdByAdmin = true;
-  location.calendlyLink = `${process.env.CALENDLY_LINK}`
-
+  location.calendlyLink = `${process.env.CALENDLY_LINK}`;
 
   await location.save().catch((error: any) => {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
@@ -1267,7 +1265,7 @@ const loadFakeData = catchAsync(async (req: any, res: any) => {
     newLocation.stripeProductId = product.id;
     newLocation.stripePriceId = price.id;
     newLocation.propertyType = newLocations[i].propertyType;
-    newLocation.landUse = 'commercial';
+    newLocation.landUse = "commercial";
     newLocation.long = "-70.576469";
     newLocation.lat = "-33.469230";
     newLocation.squareMeters = 90;
@@ -1317,7 +1315,7 @@ const loadFakeData = catchAsync(async (req: any, res: any) => {
     newLocation.stripeProductId = product.id;
     newLocation.stripePriceId = price.id;
     newLocation.propertyType = newPeruLocations[i].propertyType;
-    newLocation.landUse = 'commercial';
+    newLocation.landUse = "commercial";
     newLocation.long = "-77.042793";
     newLocation.lat = "-12.046374";
     newLocation.squareMeters = 90;
@@ -1452,7 +1450,7 @@ const getAllPayments = catchAsync(async (req: any, res: any) => {
 
 // IMAGES
 import validImageTableName from "../utils/validImageTableName";
-import { locations } from '../utils/fakeData';
+import { locations } from "../utils/fakeData";
 import { Testimonial } from "../models/Testimonial";
 import { General } from "../models/General";
 import { Room } from "../models/Room";
@@ -1476,11 +1474,13 @@ const postOneImage = catchAsync(async (req: any, res: any) => {
   if (req.file.mimetype === "application/octet-stream") {
     const outputBuffer = await convert({
       buffer: imageBuffer, // the HEIC file buffer
-      format: 'JPEG',      // output format
-      quality: 0.92           // the jpeg compression quality, between 0 and 1
+      format: "JPEG", // output format
+      quality: 0.92, // the jpeg compression quality, between 0 and 1
     });
-    imageBuffer = outputBuffer
-    imagePath = `${userEmail}${route}${currentDate}${originalname.split(".")[0]}.jpeg`;
+    imageBuffer = outputBuffer;
+    imagePath = `${userEmail}${route}${currentDate}${
+      originalname.split(".")[0]
+    }.jpeg`;
   }
 
   const file = getAdminStorage().bucket().file(imagePath);
@@ -1612,7 +1612,7 @@ const sendWelcomeEmail = catchAsync(async (req: any, res: any) => {
 const postNewTestimonial = catchAsync(async (req: any, res: any) => {
   const { video_url, name, position, location } = req.body;
 
-  const newTestimonial = new Testimonial()
+  const newTestimonial = new Testimonial();
 
   newTestimonial.name = name;
   newTestimonial.video_url = video_url;
@@ -1635,7 +1635,10 @@ const putTestimonial = catchAsync(async (req: any, res: any) => {
   });
 
   if (!testimonial) {
-    throw new ApiError(httpStatus.NOT_FOUND, "No se encontro la información que buscas");
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      "No se encontro la información que buscas"
+    );
   }
 
   testimonial.name = name;
@@ -1674,7 +1677,7 @@ const deleteTestimonial = catchAsync(async (req: any, res: any) => {
 const postNewCoverImage = catchAsync(async (req: any, res: any) => {
   const { imageUrl, text } = req.body;
 
-  const newImageCover = new General()
+  const newImageCover = new General();
 
   newImageCover.image = imageUrl;
   newImageCover.text = text;
@@ -1689,13 +1692,20 @@ const postNewCoverImage = catchAsync(async (req: any, res: any) => {
 const putCoverImage = catchAsync(async (req: any, res: any) => {
   const { imageUrl } = req.body;
   const { id } = req.params;
-  console.log('%cgeneral.controller.ts line:48 id', 'color: white; background-color: #007acc;', id);
+  console.log(
+    "%cgeneral.controller.ts line:48 id",
+    "color: white; background-color: #007acc;",
+    id
+  );
   const imageData = await General.findOne({
     where: { id },
   });
 
   if (!imageData) {
-    throw new ApiError(httpStatus.NOT_FOUND, "No se encontro la información que buscas");
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      "No se encontro la información que buscas"
+    );
   }
 
   imageData.image = imageUrl;
@@ -1709,14 +1719,17 @@ const putCoverImage = catchAsync(async (req: any, res: any) => {
 
 const putText = catchAsync(async (req: any, res: any) => {
   const { text } = req.body;
-  const { id } = req.params
+  const { id } = req.params;
 
   const imageData = await General.findOne({
     where: { id },
   });
 
   if (!imageData) {
-    throw new ApiError(httpStatus.NOT_FOUND, "No se encontro la información que buscas");
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      "No se encontro la información que buscas"
+    );
   }
 
   imageData.text = text;
@@ -1728,7 +1741,7 @@ const putText = catchAsync(async (req: any, res: any) => {
   return res.status(httpStatus.OK).json(imageData.text);
 });
 
-
+// ROOM
 const post = catchAsync(async (req: any, res: any) => {
   const { name, description, image, squareMeter, locationId, value } = req.body;
 
@@ -1766,60 +1779,65 @@ const post = catchAsync(async (req: any, res: any) => {
 
 const updateRoom = catchAsync(async (req: any, res: any) => {
   const { idRoom } = req.params;
-  const { name, description, image, squareMeter, locationId, value, isDeleted } = req.body;
+  const { locationId } = req.body;
 
-  const location = await Location.findOne({
+  console.log(
+    "%cadmin.controller.ts line:1784 req.body",
+    "color: #007acc;",
+    JSON.stringify(req.body, null, "\t")
+  );
+
+  const foundLocation = await Location.findOne({
     where: { id: locationId },
     relations: ["owner"],
   });
 
-  if (!location) {
+  if (!foundLocation) {
     return res
       .status(httpStatus.NO_CONTENT)
       .json({ message: "location not found" });
   }
 
-  let newRoom = await Room.findOne({
+  let foundRoom = await Room.findOne({
     where: { id: idRoom },
   });
 
-  if (!newRoom) {
+  if (!foundRoom) {
     throw new ApiError(httpStatus.NOT_FOUND, "room not found");
   }
 
-  newRoom.name = name;
-  newRoom.description = description;
-  newRoom.image = image;
-  newRoom.squareMeter = squareMeter;
-  newRoom.isDeleted = isDeleted;
+  // if (value && newRoom.value !== value) {
+  //   let stripeProductId;
+  //   if (!newRoom.stripeProductId) {
+  //     const stripeProduct = await stripe.products.create({
+  //       name: location.name,
+  //     });
+  //     stripeProductId = stripeProduct.id;
+  //     newRoom.stripeProductId = stripeProductId.id;
+  //   } else {
+  //     stripeProductId = newRoom.stripeProductId;
+  //   }
+  //   const price = await stripe.prices.create({
+  //     product: stripeProductId,
+  //     unit_amount: value,
+  //     currency: "clp",
+  //   });
+  //   newRoom.stripePriceId = price.id;
+  //   newRoom.value = value;
+  // }
 
-  if (value && newRoom.value !== value) {
-    let stripeProductId;
-    if (!newRoom.stripeProductId) {
-      const stripeProduct = await stripe.products.create({
-        name: location.name,
-      });
-      stripeProductId = stripeProduct.id;
-      newRoom.stripeProductId = stripeProductId.id;
-    } else {
-      stripeProductId = newRoom.stripeProductId;
-    }
-    const price = await stripe.prices.create({
-      product: stripeProductId,
-      unit_amount: value,
-      currency: "clp",
-    });
-    newRoom.stripePriceId = price.id;
-    newRoom.value = value;
-  }
+  delete req.body.locationId; // remove locationId from body to save the rest if the body
 
-  await newRoom.save().catch((error) => {
+  const roomUpdated = await Room.update(
+    { id: parseInt(idRoom) },
+    req.body
+  ).catch((error) => {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
   });
 
   res.status(httpStatus.OK).json({
-    idLocation: location.id,
-    room: newRoom,
+    idLocation: foundLocation.id,
+    room: roomUpdated,
   });
 });
 
@@ -1972,7 +1990,6 @@ module.exports = {
   postNewTestimonial,
   putTestimonial,
   deleteTestimonial,
-
 
   postNewCoverImage,
   putCoverImage,

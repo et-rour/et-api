@@ -136,6 +136,7 @@ const createLocationCheckoutSession = catchAsync(async (req: any, res: any) => {
 
   let locationName = foundLocation.name;
   let propertyValue = foundLocation.value;
+  let propertyIsDaily = foundLocation.isDaily;
   let isRoom = false;
   if (roomId !== "entire") {
     const foundRoom = await Room.findOne({
@@ -147,6 +148,7 @@ const createLocationCheckoutSession = catchAsync(async (req: any, res: any) => {
     }
     locationName = foundRoom.name;
     propertyValue = foundRoom.value;
+    propertyIsDaily = foundRoom.isDaily;
     isRoom = true;
   }
 
@@ -208,7 +210,7 @@ const createLocationCheckoutSession = catchAsync(async (req: any, res: any) => {
     metadata_reservation_room_name: locationName,
     metadata_reservation_location_id: foundLocation.id,
     metadata_reservation_location_name: locationName,
-    metadata_reservation_is_daily: foundLocation.isDaily,
+    metadata_reservation_is_daily: propertyIsDaily,
     metadata_reservation_price: propertyValue,
     metadata_reservation_user_id: req.currentUser.id,
     metadata_user_email: req.currentUser.email,
@@ -409,15 +411,15 @@ const webhook = catchAsync(async (request: any, response: any) => {
         Number(metadataRecived.metadata_reservation_date_end)
       ).toDate();
 
-      const isTrueRoom =
-        metadataRecived.metadata_reservation_is_room === "true";
+      const isTrueRoom = metadataRecived.metadata_reservation_is_room === "true";
+      const isTrueDaily = metadataRecived.metadata_reservation_is_daily === "true";
 
       const reservation = new Reservation();
       reservation.start = reservationStartDate;
       reservation.end = reservationEndDate;
       reservation.clientId = metadataRecived.metadata_reservation_user_id;
       reservation.ownerId = metadataRecived.metadata_reservation_owner_id;
-      reservation.isDaily = metadataRecived.metadata_reservation_is_daily;
+      reservation.isDaily = isTrueDaily;
       reservation.price = paymentIntent.amount_total;
       reservation.status = "created";
       reservation.locationId = metadataRecived.metadata_reservation_location_id;

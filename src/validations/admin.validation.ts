@@ -1,6 +1,6 @@
 import { allow } from "joi";
 
-export { };
+export {};
 const Joi = require("joi");
 
 // USER
@@ -80,6 +80,7 @@ const modifyLocation = {
     endLease: Joi.string().allow(null, ""),
     createdByAdmin: Joi.boolean(),
     isDaily: Joi.boolean(),
+    dailyValue: Joi.number(),
   }),
 };
 const updateLocationCoverImage = {
@@ -244,7 +245,9 @@ const updateRoom = {
     squareMeter: Joi.number().allow(null, ""),
     locationId: Joi.number().required(),
     value: Joi.number(),
-    isDeleted: Joi.boolean()
+    isDeleted: Joi.boolean(),
+    dailyValue: Joi.number(),
+    isDaily: Joi.boolean(),
   }),
 };
 const updateRoomIsActive = {
@@ -259,7 +262,6 @@ const updateRoomImage = {
     locationId: Joi.number().required(),
   }),
 };
-
 
 module.exports = {
   verifyUser,
@@ -292,5 +294,4 @@ module.exports = {
   updateRoom,
   updateRoomIsActive,
   updateRoomImage,
-
 };
