@@ -22,7 +22,8 @@ const get = catchAsync(async (req: any, res: any) => {
   const locations = await Location.find({
     relations: ["zone", "owner", "roomsDetails", "images3D"],
     order: {
-      isActive:"DESC"
+      isActive: "DESC",
+      order: "ASC",
     },
     where: {
       // isActive: true,
@@ -52,7 +53,7 @@ const getLocationById = catchAsync(async (req: any, res: any) => {
     .innerJoinAndSelect("location.zone", "zone")
     .innerJoinAndSelect("location.owner", "user")
     .leftJoinAndSelect(
-      "location.roomsDetails", 
+      "location.roomsDetails",
       "room",
       "room.isDeleted = false"
     )
@@ -88,7 +89,7 @@ const getLocationsByOwner = catchAsync(async (req: any, res: any) => {
       // isActive: true,
       isTrash: false,
       isDeleted: false,
-      owner: idOwner
+      owner: idOwner,
     },
   });
 
@@ -197,7 +198,7 @@ const post = catchAsync(async (req: any, res: any) => {
   newLocation.long = lng ? lng : "-70.576469";
   newLocation.squareMeters = meters;
   newLocation.unused = parseInt(unused);
-  newLocation.calendlyLink = `${process.env.CALENDLY_LINK}`
+  newLocation.calendlyLink = `${process.env.CALENDLY_LINK}`;
 
   console.log("location body reqquest", newLocation);
 
@@ -214,19 +215,18 @@ const post = catchAsync(async (req: any, res: any) => {
 });
 
 const updateLeaseRange = catchAsync(async (req: any, res: any) => {
-  
   const { start, end, locationId } = req.body;
 
   const location = await Location.findOne({
-    where: {id: locationId},
-    relations: ['owner'],
-  })
+    where: { id: locationId },
+    relations: ["owner"],
+  });
 
   if (!location) {
     return res
       .status(httpStatus.NO_CONTENT)
       .json({ response: "No se encontro la propiedad" });
-  }    
+  }
   if (req.currentUser.id !== location.owner.id) {
     if (!req.currentUser || req.currentUser.isAdmin !== true) {
       return res
@@ -235,7 +235,6 @@ const updateLeaseRange = catchAsync(async (req: any, res: any) => {
     }
   }
 
-  
   location.startLease = start;
   location.endLease = end;
 
@@ -246,20 +245,19 @@ const updateLeaseRange = catchAsync(async (req: any, res: any) => {
 });
 
 const updateLocation = catchAsync(async (req: any, res: any) => {
-  
   const { id } = req.params;
-  const { startLease, endLease, isActive } = req.body
+  const { startLease, endLease, isActive } = req.body;
 
   const foundLocation = await Location.findOne({
-    where: {id},
-    relations: ['owner'],
-  })
+    where: { id },
+    relations: ["owner"],
+  });
 
   if (!foundLocation) {
     return res
       .status(httpStatus.NO_CONTENT)
       .json({ response: "No se encontro la propiedad" });
-  }    
+  }
   if (req.currentUser.id !== foundLocation.owner.id) {
     if (!req.currentUser || req.currentUser.isAdmin !== true) {
       return res
@@ -268,8 +266,12 @@ const updateLocation = catchAsync(async (req: any, res: any) => {
     }
   }
 
-  console.log('%clocations.controller.ts line:271 req.body', 'color: white; background-color: #007acc;', req.body);
-  
+  console.log(
+    "%clocations.controller.ts line:271 req.body",
+    "color: white; background-color: #007acc;",
+    req.body
+  );
+
   foundLocation.startLease = startLease;
   foundLocation.endLease = endLease;
   foundLocation.isActive = isActive;
@@ -536,5 +538,5 @@ module.exports = {
   // createCheckoutSession,
   // webhook,
   changeLocationIsActiveProperty,
-  updateLocation
+  updateLocation,
 };

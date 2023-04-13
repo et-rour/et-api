@@ -5,6 +5,7 @@ import {
   BaseEntity,
   ManyToOne,
   OneToMany,
+  Generated,
 } from "typeorm";
 
 import { Zone } from "./Zone";
@@ -153,4 +154,8 @@ export class Location extends BaseEntity {
 
   @Column({ default: 0 })
   dailyValue: number;
+
+  @Column()
+  @Generated("increment")
+  order: number;
 }

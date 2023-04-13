@@ -350,7 +350,9 @@ const getAllLocations = catchAsync(async (req: any, res: any) => {
       isDeleted: false,
     },
     relations: ["zone"],
-    order: { id: "ASC" },
+    order: {
+      order: "ASC",
+    },
   });
 
   if (!locations.length) {
@@ -453,6 +455,31 @@ const setLocationsValue = catchAsync(async (req: any, res: any) => {
     stripePriceId: location.stripePriceId,
     stripeProductId: location.stripeProductId,
   });
+});
+
+const setOrderForLocations = catchAsync(async (req: any, res: any) => {
+  const { locationsList } = req.body;
+
+  await Promise.all(
+    locationsList.map(async (location: any) => {
+      const foundLocation = await Location.findOne({ id: location.id });
+
+      if (!foundLocation) {
+        throw new ApiError(
+          httpStatus.INTERNAL_SERVER_ERROR,
+          "Could not find selected location"
+        );
+      }
+
+      foundLocation.order = location.order;
+
+      await foundLocation.save().catch((error: any) => {
+        throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
+      });
+    })
+  );
+
+  return res.status(httpStatus.OK).json(true);
 });
 
 const activeLocationsStatus = catchAsync(async (req: any, res: any) => {
@@ -1941,6 +1968,7 @@ const updateRoomImage = catchAsync(async (req: any, res: any) => {
 module.exports = {
   getAllUsers,
   getTrashUsers,
+  setOrderForLocations,
   getUserById,
   updateUserData,
   getUserByIdTrash,
