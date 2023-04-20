@@ -5,6 +5,7 @@ import {
   BaseEntity,
   ManyToOne,
   OneToMany,
+  Generated,
 } from "typeorm";
 
 import { Zone } from "./Zone";
@@ -147,7 +148,14 @@ export class Location extends BaseEntity {
 
   @OneToMany(() => Reservation, (reservation) => reservation.location)
   reservations: Reservation[];
-  
+
   @Column({ default: false })
   isDaily: boolean;
+
+  @Column({ default: 0 })
+  dailyValue: number;
+
+  @Column()
+  @Generated("increment")
+  order: number;
 }
