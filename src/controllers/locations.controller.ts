@@ -20,7 +20,7 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const get = catchAsync(async (req: any, res: any) => {
   const locations = await Location.find({
-    relations: ["zone", "owner", "roomsDetails", "images3D"],
+    relations: ["zone", "owner", "roomsDetails"],
     order: {
       isActive: "DESC",
       order: "ASC",
