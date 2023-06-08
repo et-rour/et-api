@@ -248,6 +248,8 @@ const updateRoom = {
     isDeleted: Joi.boolean(),
     dailyValue: Joi.number(),
     isDaily: Joi.boolean(),
+    startLease: Joi.string().allow(null, ""),
+    endLease: Joi.string().allow(null, ""),
   }),
 };
 const updateRoomIsActive = {
