@@ -1,19 +1,12 @@
 export {};
 /** Node Modules */
 const httpStatus = require("http-status");
-
 /** Custom Modules */
 const catchAsync = require("../utils/catchAsync");
 const ApiError = require("../utils/ApiError");
-const pick = require("../utils/pick");
-const {
-  storage,
-  storageRef,
-  storageUploadBytes,
-  storeGetDownloadURL,
-} = require("../config/firebase");
 
 import axios from "axios";
+
 const FIRST_PART_PROMPT = `
 Eres una asistente virtual para una compañía llamada Espacio Temporal. Tu nombre es Clara y los debes guiar por el proceso completo para rentar una propiedad o un espacio disponible principalmente en chile, pero con otros países la empresa esta en proceso de incluir varios otros países.
 
@@ -92,7 +85,6 @@ Puedes reservar un espacio directamente en nuestro sitio web (webpay) o haciendo
 Algunos centros cuentan con estacionamiento. Hay que considerar un extra de $20.000.- mensuales a los valores normales de los espacios.
 `;
 import { General } from "../models/General";
-import { Location } from "../models/Location";
 import { getTokens } from "../utils/tokenizer";
 
 const getCovers = catchAsync(async (req: any, res: any) => {
@@ -197,7 +189,100 @@ const chatText = catchAsync(async (req: any, res: any) => {
   return res.status(httpStatus.OK).json({ response: chatResponse.data });
 });
 
+const chatTextWebsokets = catchAsync(async (req: any, res: any) => {
+  // const locations = await Location.createQueryBuilder("location")
+  //   .innerJoinAndSelect("location.zone", "zone")
+  //   .innerJoinAndSelect("location.owner", "owner")
+  //   .select([
+  //     "location.name",
+  //     "location.address",
+  //     "location.squareMeters",
+  //     "zone.city",
+  //     "owner.firstName",
+  //     "owner.lastName",
+  //   ])
+  //   .getRawMany();
+
+  let tokenCount = 0;
+  const reqMessages = req.body.messages;
+
+  reqMessages.forEach((msg: any) => {
+    const tokens = getTokens(msg.content);
+    tokenCount += tokens;
+  });
+
+  const moderationRes = await axios({
+    method: "POST",
+    url: "https://api.openai.com/v1/moderations",
+    data: JSON.stringify({
+      input: reqMessages[reqMessages.length - 1].content,
+    }),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+    },
+  }).catch((err) => {
+    console.log(
+      "%cerror general.controller.ts line:84 ",
+      "color: red; display: block; width: 100%;",
+      err
+    );
+    throw new ApiError(httpStatus.NOT_ACCEPTABLE, err.error.message);
+  });
+
+  const moderationData: any = moderationRes.data;
+  const [results] = moderationData.results;
+
+  if (results.flagged) {
+    throw new ApiError(
+      httpStatus.NOT_ACCEPTABLE,
+      "Se detectaron mensajes inapropidados por openai"
+    );
+  }
+
+  const prompt = FIRST_PART_PROMPT;
+  tokenCount += getTokens(prompt);
+
+  if (tokenCount >= 4000) {
+    throw new ApiError(httpStatus.NOT_ACCEPTABLE, "Query demaciado larga");
+  }
+
+  const messages = [{ role: "system", content: prompt }, ...reqMessages];
+
+  const chatRequestOpts = {
+    model: "gpt-3.5-turbo",
+    messages,
+    temperature: 0.6,
+  };
+
+  const chatResponse = await axios({
+    method: "POST",
+    url: "https://api.openai.com/v1/chat/completions",
+    data: JSON.stringify(chatRequestOpts),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+    },
+  }).catch((err) => {
+    console.log(
+      "%cerror general.controller.ts line:84 ",
+      "color: red; display: block; width: 100%;",
+      err
+    );
+
+    throw new ApiError(httpStatus.NOT_ACCEPTABLE, err.error.message);
+  });
+
+  // console.log(
+  //   "%cgeneral.controller.ts line:128 prompt",
+  //   "color: #007acc;",
+  //   JSON.stringify(prompt, null, "\t")
+  // );
+  return res.status(httpStatus.OK).json({ response: chatResponse.data });
+});
+
 module.exports = {
   getCovers,
   chatText,
+  chatTextWebsokets,
 };

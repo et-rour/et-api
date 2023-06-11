@@ -1,3 +1,4 @@
+import axios from "axios";
 // #!/usr/bin/env node
 
 // /**
@@ -78,7 +79,6 @@
 //   }
 // }
 
-
 // #!/usr/bin/env node
 
 /**
@@ -128,6 +128,90 @@ let server = app.listen(process.env.PORT || 3000);
 server.on("error", onError);
 server.on("listening", onListening);
 
+/**
+ * Websoket Server
+ */
+const WebSocketServer = require("websocket").server;
+const wsServer = new WebSocketServer({
+  httpServer: server,
+  autoAcceptConnections: false,
+});
+const { Configuration, OpenAIApi } = require("openai");
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+const openai = new OpenAIApi(configuration);
+
+wsServer.on("request", (request: any) => {
+  // if (!originIsAllowed(request.origin)) {
+  //     // Sólo se aceptan request de origenes permitidos
+  //     request.reject();
+  //     console.log((new Date()) + ' Conexión del origen ' + request.origin + ' rechazada.');
+  //     return;
+  //   }
+  const connection = request.accept(null, request.origin);
+  connection.on("message", async (message: any) => {
+    const messages = [{ role: "user", content: "Quien eres" }];
+
+    const chatRequestOpts = {
+      model: "gpt-3.5-turbo",
+      messages,
+      temperature: 0.6,
+      stream: true,
+    };
+
+    try {
+      const res = await openai.createChatCompletion(chatRequestOpts, {
+        responseType: "stream",
+      });
+
+      res.data.on("data", (data: any) => {
+        const lines = data
+          .toString()
+          .split("\n")
+          .filter((line: any) => line.trim() !== "");
+        for (const line of lines) {
+          const message = line.replace(/^data: /, "");
+          if (message === "[DONE]") {
+            connection.close(); // Stream finished
+            return;
+          }
+          try {
+            const parsed = JSON.parse(message);
+            const responseChat = parsed.choices[0].delta.content;
+            if (responseChat) {
+              connection.sendUTF(responseChat);
+            }
+          } catch (error) {
+            console.error(
+              "Could not JSON parse stream message",
+              message,
+              error
+            );
+          }
+        }
+      });
+    } catch (error: any) {
+      if (error.response?.status) {
+        console.error(error.response.status, error.message);
+        error.response.data.on("data", (data: any) => {
+          const message = data.toString();
+          try {
+            const parsed = JSON.parse(message);
+            console.error("An error occurred during OpenAI request: ", parsed);
+          } catch (error) {
+            console.error("An error occurred during OpenAI request: ", message);
+          }
+        });
+      } else {
+        console.error("An error occurred during OpenAI request", error);
+      }
+    }
+  });
+  connection.on("close", (reasonCode: any, description: any) => {
+    console.log("El cliente se desconecto");
+  });
+});
 /**
  * Workers creation funciton
  */
