@@ -1,3 +1,4 @@
+import axios from "axios";
 // #!/usr/bin/env node
 
 // /**
@@ -78,7 +79,6 @@
 //   }
 // }
 
-
 // #!/usr/bin/env node
 
 /**
@@ -87,6 +87,7 @@
 
 import app from "./src/app";
 import { intializeDB } from "./src/config/db";
+import chatWebsocket from "./src/websockets/chat";
 // const { initializeApp } = require("./src/config/db");
 // const app = require( "./src/app");
 const cluster = require("cluster");
@@ -128,6 +129,15 @@ let server = app.listen(process.env.PORT || 3000);
 server.on("error", onError);
 server.on("listening", onListening);
 
+/**
+ * Websoket Server
+ */
+const WebSocketServer = require("websocket").server;
+const wsServer = new WebSocketServer({
+  httpServer: server,
+  autoAcceptConnections: false,
+});
+wsServer.on("request", (request: any) => chatWebsocket(request));
 /**
  * Workers creation funciton
  */

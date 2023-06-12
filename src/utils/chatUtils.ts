@@ -1,13 +1,6 @@
-export {};
-/** Node Modules */
-const httpStatus = require("http-status");
-/** Custom Modules */
-const catchAsync = require("../utils/catchAsync");
-const ApiError = require("../utils/ApiError");
+const admin = require("../config/firebaseAdmin").firebase_admin_connect();
 
-import axios from "axios";
-
-const FIRST_PART_PROMPT = `
+export const FIRST_PART_PROMPT = `
 Eres una asistente virtual para una compañía llamada Espacio Temporal. Tu nombre es Clara y los debes guiar por el proceso completo para rentar una propiedad o un espacio disponible principalmente en chile, pero con otros países la empresa esta en proceso de incluir varios otros países.
 
 La compañía fue fundada en 2019, Espacio Temporal ha creado espacios comerciales especialmente para hacer la experiencia de arriendo más fácil, cómoda para PYMES, artistas y emprendedores
@@ -84,112 +77,36 @@ Puedes reservar un espacio directamente en nuestro sitio web (webpay) o haciendo
 
 Algunos centros cuentan con estacionamiento. Hay que considerar un extra de $20.000.- mensuales a los valores normales de los espacios.
 `;
-import { General } from "../models/General";
-import { getTokens } from "../utils/tokenizer";
 
-const getCovers = catchAsync(async (req: any, res: any) => {
-  const coversData = await General.find();
+export const originIsAllowed = (url: any) => {
+  const validUrls = [
+    "https://espacio-temporal-test.vercel.app",
+    "https://espacio-temporal-prod.vercel.app",
+    "https://espaciotemporal.org",
+    "http://localhost:8081",
+  ];
 
-  if (!coversData) {
-    throw new ApiError(httpStatus.NOT_FOUND, "No hay imagenes disponibles");
+  return validUrls.some((validUrl) => url.includes(validUrl));
+};
+
+export const tokenIsAllowed = async (connection: any, token: any) => {
+  let isValidToken: boolean = false;
+  try {
+    await admin
+      .auth()
+      .verifyIdToken(token)
+      .then((decodedToken: any) => {
+        console.log(decodedToken);
+        isValidToken = true;
+      });
+  } catch (error) {
+    // connection.send(
+    //   JSON.stringify({
+    //     status: "error",
+    //     content: "Pregunta rechazada por token",
+    //   })
+    // );
   }
 
-  return res.status(httpStatus.OK).json(coversData);
-});
-
-const chatText = catchAsync(async (req: any, res: any) => {
-  // const locations = await Location.createQueryBuilder("location")
-  //   .innerJoinAndSelect("location.zone", "zone")
-  //   .innerJoinAndSelect("location.owner", "owner")
-  //   .select([
-  //     "location.name",
-  //     "location.address",
-  //     "location.squareMeters",
-  //     "zone.city",
-  //     "owner.firstName",
-  //     "owner.lastName",
-  //   ])
-  //   .getRawMany();
-
-  let tokenCount = 0;
-  const reqMessages = req.body.messages;
-
-  reqMessages.forEach((msg: any) => {
-    const tokens = getTokens(msg.content);
-    tokenCount += tokens;
-  });
-
-  const moderationRes = await axios({
-    method: "POST",
-    url: "https://api.openai.com/v1/moderations",
-    data: JSON.stringify({
-      input: reqMessages[reqMessages.length - 1].content,
-    }),
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-    },
-  }).catch((err) => {
-    console.log(
-      "%cerror general.controller.ts line:84 ",
-      "color: red; display: block; width: 100%;",
-      err
-    );
-    throw new ApiError(httpStatus.NOT_ACCEPTABLE, err.error.message);
-  });
-
-  const moderationData: any = moderationRes.data;
-  const [results] = moderationData.results;
-
-  if (results.flagged) {
-    throw new ApiError(
-      httpStatus.NOT_ACCEPTABLE,
-      "Se detectaron mensajes inapropidados por openai"
-    );
-  }
-
-  const prompt = FIRST_PART_PROMPT;
-  tokenCount += getTokens(prompt);
-
-  if (tokenCount >= 4000) {
-    throw new ApiError(httpStatus.NOT_ACCEPTABLE, "Query demaciado larga");
-  }
-
-  const messages = [{ role: "system", content: prompt }, ...reqMessages];
-
-  const chatRequestOpts = {
-    model: "gpt-3.5-turbo",
-    messages,
-    temperature: 0.6,
-  };
-
-  const chatResponse = await axios({
-    method: "POST",
-    url: "https://api.openai.com/v1/chat/completions",
-    data: JSON.stringify(chatRequestOpts),
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-    },
-  }).catch((err) => {
-    console.log(
-      "%cerror general.controller.ts line:84 ",
-      "color: red; display: block; width: 100%;",
-      err
-    );
-
-    throw new ApiError(httpStatus.NOT_ACCEPTABLE, err.error.message);
-  });
-
-  // console.log(
-  //   "%cgeneral.controller.ts line:128 prompt",
-  //   "color: #007acc;",
-  //   JSON.stringify(prompt, null, "\t")
-  // );
-  return res.status(httpStatus.OK).json({ response: chatResponse.data });
-});
-
-module.exports = {
-  getCovers,
-  chatText,
+  return isValidToken;
 };
