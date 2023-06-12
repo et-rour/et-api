@@ -89,34 +89,24 @@ export const originIsAllowed = (url: any) => {
   return validUrls.some((validUrl) => url.includes(validUrl));
 };
 
-export const tokenIsAllowed = async (ws: any, req: any) => {
-  // let token = req.get("authorization").replace("Bearer ", "");
-  console.log(
-    "%cchatUtils.ts line:94 Object",
-    "color: white; background-color: #007acc;",
-    { ws, req }
-  );
-  // console.log(
-  //   "%cchatUtils.ts line:94 token",
-  //   "color: white; background-color: #007acc;",
-  //   token
-  // );
-  // let info: any;
-  // try {
-  //   await admin
-  //     .auth()
-  //     .verifyIdToken(token)
-  //     .then((decodedToken: any) => {
-  //       info = decodedToken;
-  //       // console.log(info);
-  //     });
-  // } catch (error) {
-  //   req.reject();
-  //   console.log(
-  //     new Date() +
-  //       " Conexión del origen " +
-  //       req.origin +
-  //       " rechazada por token."
-  //   );
-  // }
+export const tokenIsAllowed = async (connection: any, token: any) => {
+  let isValidToken: boolean = false;
+  try {
+    await admin
+      .auth()
+      .verifyIdToken(token)
+      .then((decodedToken: any) => {
+        console.log(decodedToken);
+        isValidToken = true;
+      });
+  } catch (error) {
+    // connection.send(
+    //   JSON.stringify({
+    //     status: "error",
+    //     content: "Pregunta rechazada por token",
+    //   })
+    // );
+  }
+
+  return isValidToken;
 };

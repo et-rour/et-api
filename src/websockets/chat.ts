@@ -6,7 +6,11 @@ const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 });
 const openai = new OpenAIApi(configuration);
-import { originIsAllowed, FIRST_PART_PROMPT } from "../utils/chatUtils";
+import {
+  originIsAllowed,
+  FIRST_PART_PROMPT,
+  tokenIsAllowed,
+} from "../utils/chatUtils";
 
 const chatWebsocket = (request: any) => {
   {
@@ -33,13 +37,20 @@ const chatWebsocket = (request: any) => {
       );
 
       if (cleanMessages.length > 4) {
-        connection.send(
-          JSON.stringify({
-            status: "error",
-            content: "Limite de mensajes alcanzado",
-          })
+        const tokenValid = await tokenIsAllowed(
+          connection,
+          stringMessage.token
         );
-        return;
+        if (!tokenValid) {
+          connection.send(
+            JSON.stringify({
+              status: "error",
+              content:
+                "Límite de mensajes alcanzados, inicia sesión para continuar",
+            })
+          );
+          return;
+        }
       }
 
       const moderationRes = await axios({
